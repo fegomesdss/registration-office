@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Web — Presentation</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Share+Tech+Mono&family=Oswald:wght@300;400;600&display=swap');
+
+:root {
+  --bg: #0a0a08;
+  --bg2: #111110;
+  --bg3: #1a1a17;
+  --amber: #d4a017;
+  --amber-dim: #8a6610;
+  --amber-glow: rgba(212,160,23,0.15);
+  --red: #c0392b;
+  --red-dim: #7a2020;
+  --green: #4aaa4a;
+  --wire: #3a3a35;
+  --wire2: #2a2a28;
+  --text: #d0c8b0;
+  --text-dim: #7a7268;
+  --text-faint: #3a3530;
+  --teal: #5a7a8a;
+  --teal-bright: #7ab0c8;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width:100%; height:100%;
+  background: var(--bg);
+  font-family: 'Share Tech Mono', monospace;
+  overflow: hidden;
+  color: var(--text);
+  cursor: default;
+}
+
+/* GRAIN */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  opacity: 0.7;
+}
+
+/* SCANLINES */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:9998;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.025) 3px, rgba(0,0,0,0.025) 6px);
+}
+
+/* ======================== DECK ======================== */
+#deck {
+  width: 100vw; height: 100vh;
+  position: relative; overflow: hidden;
+}
+
+.slide {
+  position: absolute; inset: 0;
+  display: grid;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.slide.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ======================== CHROME ======================== */
+#chrome-top {
+  position: fixed; top: 0; left: 0; right: 0; height: 44px;
+  background: var(--bg2); border-bottom: 1px solid var(--wire);
+  display: flex; align-items: center; padding: 0 28px;
+  z-index: 100;
+}
+#chrome-top::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+}
+.ct-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px; font-weight: 600;
+  letter-spacing: 6px; color: var(--amber);
+  text-shadow: 0 0 14px rgba(212,160,23,0.4);
+}
+.ct-sub {
+  font-size: 8px; color: var(--text-dim); letter-spacing: 3px; margin-left: 16px;
+}
+.ct-spacer { flex:1; }
+.ct-counter {
+  font-size: 9px; color: var(--text-dim); letter-spacing: 3px;
+}
+
+#chrome-bottom {
+  position: fixed; bottom: 0; left: 0; right: 0; height: 36px;
+  background: var(--bg2); border-top: 1px solid var(--wire);
+  display: flex; align-items: center; padding: 0 28px; gap: 12px;
+  z-index: 100;
+}
+#chrome-bottom::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent, var(--wire), transparent);
+}
+
+.nav-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text-dim); background: transparent;
+  border: 1px solid var(--wire); padding: 4px 12px;
+  cursor: pointer; transition: all 0.2s;
+}
+.nav-btn:hover { color: var(--amber); border-color: var(--amber-dim); }
+
+.progress-track {
+  flex:1; height: 2px; background: var(--wire2);
+  position: relative;
+}
+.progress-fill {
+  position:absolute; left:0; top:0; height:100%;
+  background: var(--amber); transition: width 0.4s ease;
+}
+
+.pip-row { display:flex; gap:6px; align-items:center; }
+.pip {
+  width:6px; height:6px; border:1px solid var(--wire);
+  border-radius:1px; cursor:pointer; transition: all 0.2s;
+}
+.pip.active { background: var(--amber); border-color: var(--amber); }
+.pip:hover { border-color: var(--amber-dim); }
+
+/* ======================== SLIDE CONTENT ======================== */
+.slide-inner {
+  padding: 72px 80px 60px;
+  display: flex; flex-direction: column;
+  height: 100%;
+}
+
+/* two-col layout */
+.slide-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  flex: 1;
+  align-items: center;
+}
+.slide-cols-wide {
+  grid-template-columns: 1.1fr 0.9fr;
+}
+.slide-cols-narrow {
+  grid-template-columns: 0.85fr 1.15fr;
+}
+
+/* content column */
+.col-text { display: flex; flex-direction: column; justify-content: center; }
+.col-visual { display: flex; align-items: center; justify-content: center; position: relative; }
+
+/* slide header */
+.slide-eyebrow {
+  font-size: 8px; letter-spacing: 4px; color: var(--amber-dim);
+  text-transform: uppercase; margin-bottom: 10px;
+}
+.slide-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 42px; font-weight: 600;
+  letter-spacing: 4px; color: var(--amber);
+  text-shadow: 0 0 30px rgba(212,160,23,0.3);
+  line-height: 1.1; margin-bottom: 6px;
+}
+.slide-title-sm {
+  font-size: 30px; letter-spacing: 3px;
+}
+.slide-subtitle {
+  font-size: 11px; color: var(--text-dim); letter-spacing: 2px;
+  margin-bottom: 28px;
+}
+
+/* bullet list */
+.bullet-list { display: flex; flex-direction: column; gap: 12px; }
+.bullet-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  font-size: 12px; line-height: 1.65; color: var(--text);
+  animation: slideUp 0.4s ease both;
+}
+.bullet-item:nth-child(1) { animation-delay: 0.05s; }
+.bullet-item:nth-child(2) { animation-delay: 0.12s; }
+.bullet-item:nth-child(3) { animation-delay: 0.19s; }
+.bullet-item:nth-child(4) { animation-delay: 0.26s; }
+.bullet-item:nth-child(5) { animation-delay: 0.33s; }
+
+@keyframes slideUp {
+  from { opacity:0; transform: translateY(10px); }
+  to   { opacity:1; transform: none; }
+}
+
+.bullet-marker {
+  color: var(--amber); flex-shrink:0; margin-top:3px; font-size:10px;
+}
+.bullet-text { flex:1; }
+.bullet-text em { color: var(--amber); font-style: normal; }
+.bullet-text .dim { color: var(--text-dim); }
+
+/* divider */
+.h-rule {
+  height: 1px; background: linear-gradient(90deg, var(--amber-dim), transparent);
+  margin: 20px 0;
+}
+
+/* stat pills */
+.stat-row { display: flex; gap: 16px; margin-top: 20px; }
+.stat-pill {
+  border: 1px solid var(--wire); padding: 8px 14px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.stat-num {
+  font-family: 'Oswald', sans-serif; font-size: 22px;
+  color: var(--amber); letter-spacing: 1px;
+}
+.stat-label { font-size: 8px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+
+/* outcome cards */
+.outcome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.outcome-card {
+  border: 1px solid var(--wire); padding: 10px 12px;
+  background: var(--bg2); position: relative; overflow: hidden;
+}
+.outcome-card::before {
+  content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+}
+.oc-green::before { background: var(--green); }
+.oc-amber::before { background: var(--amber); }
+.oc-red::before   { background: var(--red); }
+.oc-grey::before  { background: var(--wire); }
+.outcome-title {
+  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px;
+  color: var(--text); margin-bottom: 3px;
+}
+.outcome-desc { font-size: 9px; color: var(--text-dim); line-height: 1.5; }
+
+/* ======================== SVG MOCKUPS ======================== */
+.mockup-wrap {
+  width: 100%; position: relative;
+}
+.mockup-label {
+  position: absolute; bottom: -20px; left: 0; right: 0;
+  text-align: center; font-size: 8px; color: var(--text-faint);
+  letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* ======================== SLIDE 1 — TITLE ======================== */
+#slide-1 { background: var(--bg); }
+#slide-1 .slide-inner {
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  padding: 80px 100px;
+  position: relative;
+}
+
+.s1-bg-text {
+  position: absolute; right: 60px; top: 50%; transform: translateY(-50%);
+  font-family: 'Oswald', sans-serif; font-size: 220px; font-weight: 600;
+  letter-spacing: 20px; color: rgba(212,160,23,0.04);
+  pointer-events: none; user-select: none; white-space: nowrap;
+}
+
+.s1-tag {
+  font-size: 9px; letter-spacing: 5px; color: var(--amber-dim);
+  text-transform: uppercase; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.s1-tag::before {
+  content:''; display:inline-block; width:24px; height:1px; background: var(--amber-dim);
+}
+.s1-title {
+  font-family: 'Oswald', sans-serif; font-size: 86px; font-weight: 600;
+  letter-spacing: 16px; color: var(--amber); line-height: 1;
+  text-shadow: 0 0 60px rgba(212,160,23,0.4);
+  margin-bottom: 12px;
+}
+.s1-sub {
+  font-family: 'Special Elite', serif;
+  font-size: 14px; letter-spacing: 4px; color: var(--text-dim);
+  margin-bottom: 40px;
+}
+.s1-pills { display: flex; gap: 12px; flex-wrap: wrap; }
+.s1-pill {
+  font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+  border: 1px solid var(--wire); padding: 5px 12px;
+  text-transform: uppercase;
+}
+.s1-pill span { color: var(--amber); }
+
+/* ======================== SLIDE THEMES ======================== */
+.slide-bg-line {
+  position: absolute; top: 44px; left: 0; right: 0;
+  height: 1px; background: var(--wire2); z-index: 0;
+}
+
+</style>
+</head>
+<body>
+
+<div id="chrome-top">
+  <div class="ct-title">THE WEB</div>
+  <div class="ct-sub">Anti-Corruption Investigation Game</div>
+  <div class="ct-spacer"></div>
+  <div class="ct-counter" id="ct-counter">01 / 06</div>
+</div>
+
+<div id="deck">
+
+  <!-- ===== SLIDE 1: TITLE ===== -->
+  <div class="slide active" id="slide-1">
+    <div class="slide-inner">
+      <div class="s1-bg-text">WEB</div>
+      <div class="s1-tag">Browser-based educational game</div>
+      <div class="s1-title">THE WEB</div>
+      <div class="s1-sub">An Anti-Corruption Investigation</div>
+      <div class="s1-pills">
+        <div class="s1-pill">City: <span>Mirova</span></div>
+        <div class="s1-pill">Role: <span>Detective, ACU</span></div>
+        <div class="s1-pill">Play time: <span>~10 min</span></div>
+        <div class="s1-pill">Deployment: <span>GitHub Pages</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SLIDE 2: HOW IT PLAYS ===== -->
+  <div class="slide" id="slide-2">
+    <div class="slide-inner">
+      <div class="slide-cols slide-cols-narrow">
+        <div class="col-text">
+          <div class="slide-eyebrow">Gameplay</div>
+          <div class="slide-title slide-title-sm">How it plays</div>
+          <div class="h-rule"></div>
+          <div class="bullet-list">
+            <div class="bullet-item">
+              <div class="bullet-marker">▶</div>
+              <div class="bullet-text">A network map of connected nodes — <em>politicians, police, developers, judges, press</em></div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">▶</div>
+              <div class="bullet-text">Each turn you gather evidence, reveal connections, and map who answers to whom</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">▶</div>
+              <div class="bullet-text">Evidence cards surface real document types: <em>wire transfers, witness statements, procurement files</em></div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">▶</div>
+              <div class="bullet-text">The network is too large to see whole at once — <em>that's the point</em></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-visual">
+          <div class="mockup-wrap">
+            <!-- SVG: Network map mockup -->
+            <svg viewBox="0 0 420 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;border:1px solid #2a2a28;background:#0a0a08;">
+              <!-- header bar -->
+              <rect x="0" y="0" width="420" height="28" fill="#111110"/>
+              <line x1="0" y1="28" x2="420" y2="28" stroke="#3a3a35" stroke-width="1"/>
+              <text x="12" y="18" font-family="monospace" font-size="9" fill="#d4a017" letter-spacing="4">THE WEB</text>
+              <text x="100" y="18" font-family="monospace" font-size="7" fill="#7a7268" letter-spacing="2">MIROVA ACU</text>
+              <!-- turn label -->
+              <rect x="150" y="35" width="120" height="16" fill="none" stroke="#3a3a35" stroke-width="1"/>
+              <text x="210" y="47" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="middle" letter-spacing="2">MAPPING NETWORK — TURN 3</text>
+              <!-- edges -->
+              <line x1="210" y1="175" x2="210" y2="85" stroke="#3a3a45" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6"/>
+              <line x1="210" y1="175" x2="120" y2="120" stroke="#3a3a45" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6"/>
+              <line x1="210" y1="175" x2="320" y2="100" stroke="#3a3a45" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.6"/>
+              <line x1="320" y1="100" x2="360" y2="190" stroke="#3a3a45" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4"/>
+              <line x1="120" y1="120" x2="90" y2="240" stroke="#3a3a45" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.3"/>
+              <!-- player node -->
+              <circle cx="210" cy="175" r="18" fill="rgba(10,10,8,0.95)" stroke="#d4a017" stroke-width="2"/>
+              <text x="210" y="180" font-family="monospace" font-size="11" fill="#d4a017" text-anchor="middle">◈</text>
+              <text x="210" y="200" font-family="monospace" font-size="7" fill="#c0b898" text-anchor="middle">YOU</text>
+              <!-- mayor node — selected -->
+              <circle cx="210" cy="85" r="22" fill="none" stroke="#7ab0c8" stroke-width="1" opacity="0.3" stroke-dasharray="3 2"/>
+              <circle cx="210" cy="85" r="18" fill="rgba(10,10,8,0.95)" stroke="#7ab0c8" stroke-width="2.5"/>
+              <circle cx="210" cy="85" r="18" fill="#5a7a8a" opacity="0.18"/>
+              <text x="210" y="90" font-family="monospace" font-size="11" fill="#7ab0c8" text-anchor="middle">★</text>
+              <text x="210" y="108" font-family="monospace" font-size="7" fill="#c0b898" text-anchor="middle">V. DINU</text>
+              <text x="210" y="117" font-family="monospace" font-size="6" fill="#5a5a50" text-anchor="middle">Mayor</text>
+              <!-- police node -->
+              <circle cx="120" cy="120" r="18" fill="rgba(10,10,8,0.95)" stroke="#5a7a8a" stroke-width="1.5"/>
+              <circle cx="120" cy="120" r="18" fill="#5a7a8a" opacity="0.1"/>
+              <text x="120" y="125" font-family="monospace" font-size="11" fill="#5a7a8a" text-anchor="middle">⬟</text>
+              <text x="120" y="143" font-family="monospace" font-size="7" fill="#c0b898" text-anchor="middle">I. MARES</text>
+              <text x="120" y="152" font-family="monospace" font-size="6" fill="#5a5a50" text-anchor="middle">Chief of Police</text>
+              <!-- contractor node — accused/corrupt revealed -->
+              <circle cx="320" cy="100" r="18" fill="rgba(10,10,8,0.95)" stroke="#c0392b" stroke-width="2"/>
+              <circle cx="320" cy="100" r="18" fill="#c0392b" opacity="0.12"/>
+              <text x="320" y="105" font-family="monospace" font-size="11" fill="#c0392b" text-anchor="middle">◆</text>
+              <text x="320" y="123" font-family="monospace" font-size="7" fill="#c0b898" text-anchor="middle">R. FLORESCU</text>
+              <text x="320" y="132" font-family="monospace" font-size="6" fill="#5a5a50" text-anchor="middle">Developer</text>
+              <!-- bank node — dim -->
+              <circle cx="360" cy="190" r="18" fill="rgba(10,10,8,0.95)" stroke="#4a5a60" stroke-width="1.5"/>
+              <text x="360" y="195" font-family="monospace" font-size="11" fill="#4a5a60" text-anchor="middle">◆</text>
+              <text x="360" y="213" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="middle">P. IONESCU</text>
+              <!-- journalist — hidden -->
+              <circle cx="90" cy="240" r="18" fill="rgba(10,10,8,0.95)" stroke="#3a3a35" stroke-width="1.5"/>
+              <text x="90" y="245" font-family="monospace" font-size="11" fill="#3a3a35" text-anchor="middle">?</text>
+              <text x="90" y="263" font-family="monospace" font-size="7" fill="#3a3a35" text-anchor="middle">[ UNKNOWN ]</text>
+              <!-- bottom bar -->
+              <rect x="0" y="308" width="420" height="32" fill="#111110"/>
+              <line x1="0" y1="308" x2="420" y2="308" stroke="#3a3a35" stroke-width="1"/>
+              <rect x="12" y="318" width="88" height="14" fill="none" stroke="#8a6610" stroke-width="1"/>
+              <text x="56" y="329" font-family="monospace" font-size="7" fill="#d4a017" text-anchor="middle" letter-spacing="1">▶ GATHER EVIDENCE</text>
+              <rect x="110" y="318" width="70" height="14" fill="none" stroke="#7a2020" stroke-width="1"/>
+              <text x="145" y="329" font-family="monospace" font-size="7" fill="#c0392b" text-anchor="middle" letter-spacing="1">⚠ FILE CASE</text>
+              <text x="360" y="329" font-family="monospace" font-size="7" fill="#7a7268" letter-spacing="1">END TURN ›</text>
+            </svg>
+            <div class="mockup-label">Network map — Turn 3 of 8</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SLIDE 3: DECISIONS ===== -->
+  <div class="slide" id="slide-3">
+    <div class="slide-inner">
+      <div class="slide-cols">
+        <div class="col-text">
+          <div class="slide-eyebrow">Mechanics</div>
+          <div class="slide-title slide-title-sm">The decisions<br>that matter</div>
+          <div class="h-rule"></div>
+          <div class="bullet-list">
+            <div class="bullet-item">
+              <div class="bullet-marker">⚠</div>
+              <div class="bullet-text"><em>Accuse</em> when you have enough evidence — but you might be wrong</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">$</div>
+              <div class="bullet-text"><em>Accept a bribe</em>, document it, or refuse — each shifts your integrity and exposure</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">○</div>
+              <div class="bullet-text"><em>Archive</em> a case and walk away — sometimes that's the deal you made</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">▶</div>
+              <div class="bullet-text">Rank, funds, and integrity at the end <em>reflect every choice</em> along the way</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-visual">
+          <div class="mockup-wrap">
+            <!-- SVG: Bribe modal + evidence card mockup -->
+            <svg viewBox="0 0 380 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:#0a0a08;border:1px solid #2a2a28;">
+              <!-- dim background -->
+              <rect x="0" y="0" width="380" height="340" fill="rgba(0,0,0,0.88)"/>
+              <!-- bribe modal -->
+              <rect x="40" y="30" width="300" height="200" fill="#111110" stroke="#8a6610" stroke-width="1"/>
+              <!-- top accent line -->
+              <line x1="40" y1="31" x2="340" y2="31" stroke="#d4a017" stroke-width="1.5" opacity="0.6"/>
+              <!-- label tag -->
+              <rect x="56" y="23" width="160" height="14" fill="#111110"/>
+              <text x="136" y="33" font-family="monospace" font-size="7" fill="#8a6610" text-anchor="middle" letter-spacing="2">// ENCRYPTED — EYES ONLY //</text>
+              <!-- modal content -->
+              <text x="56" y="62" font-family="'Oswald',sans-serif" font-size="13" fill="#d4a017" letter-spacing="3">OFFER RECEIVED</text>
+              <text x="56" y="92" font-family="'Oswald',sans-serif" font-size="28" fill="#4aaa4a" letter-spacing="2">€15,000</text>
+              <text x="56" y="115" font-family="monospace" font-size="8" fill="#d0c8b0" letter-spacing="0">An intermediary leaves an envelope on your</text>
+              <text x="56" y="127" font-family="monospace" font-size="8" fill="#d0c8b0">desk. Walk away from Florescu. In return:</text>
+              <text x="56" y="139" font-family="monospace" font-size="8" fill="#d0c8b0">€15,000 cash. No questions asked.</text>
+              <!-- warning box -->
+              <rect x="56" y="152" width="268" height="28" fill="rgba(192,57,43,0.05)" stroke="#7a2020" stroke-width="1"/>
+              <text x="64" y="164" font-family="monospace" font-size="7" fill="#c0392b">⚠ Accepting creates a documented vulnerability.</text>
+              <text x="64" y="174" font-family="monospace" font-size="7" fill="#c0392b">Refusing may trigger evidence destruction.</text>
+              <!-- buttons -->
+              <rect x="56" y="192" width="72" height="20" fill="none" stroke="#2d6a2d" stroke-width="1"/>
+              <text x="92" y="206" font-family="monospace" font-size="7" fill="#4aaa4a" text-anchor="middle" letter-spacing="1">$ POCKET IT</text>
+              <rect x="138" y="192" width="88" height="20" fill="none" stroke="#8a6610" stroke-width="1"/>
+              <text x="182" y="206" font-family="monospace" font-size="7" fill="#d4a017" text-anchor="middle" letter-spacing="1">⊕ USE AS EVIDENCE</text>
+              <rect x="236" y="192" width="56" height="20" fill="none" stroke="#3a3a35" stroke-width="1"/>
+              <text x="264" y="206" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="middle" letter-spacing="1">✕ REFUSE</text>
+              <!-- evidence card peeking behind -->
+              <rect x="60" y="248" width="260" height="76" fill="#111110" stroke="#3a3a35" stroke-width="1" opacity="0.9"/>
+              <line x1="60" y1="249" x2="320" y2="249" stroke="#d4a017" stroke-width="1" opacity="0.4"/>
+              <text x="72" y="264" font-family="monospace" font-size="7" fill="#8a6610" letter-spacing="2">FINANCIAL RECORD</text>
+              <text x="300" y="264" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="end">Evidence #2</text>
+              <text x="72" y="280" font-family="monospace" font-size="7" fill="#d4a017" letter-spacing="1">R. FLORESCU</text>
+              <text x="72" y="294" font-family="monospace" font-size="7" fill="#d0c8b0">Wire transfer of €380,000 to "Mediterranean</text>
+              <text x="72" y="305" font-family="monospace" font-size="7" fill="#d0c8b0">Consulting GmbH" — no employees, no contracts.</text>
+              <rect x="72" y="312" width="58" height="10" fill="none" stroke="#8a6610" stroke-width="1"/>
+              <text x="101" y="320" font-family="monospace" font-size="6" fill="#d4a017" text-anchor="middle" letter-spacing="1">SUSPICIOUS</text>
+            </svg>
+            <div class="mockup-label">Bribe modal with evidence card</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SLIDE 4: HOW IT ENDS ===== -->
+  <div class="slide" id="slide-4">
+    <div class="slide-inner">
+      <div class="slide-cols slide-cols-wide">
+        <div class="col-text">
+          <div class="slide-eyebrow">Ending</div>
+          <div class="slide-title slide-title-sm">How it ends</div>
+          <div class="h-rule"></div>
+          <div class="bullet-list">
+            <div class="bullet-item">
+              <div class="bullet-marker">—</div>
+              <div class="bullet-text"><em>No win condition</em> — only outcomes</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">—</div>
+              <div class="bullet-text">The ending screen reveals the full network and <em>your position in it</em></div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">—</div>
+              <div class="bullet-text">Each outcome maps to a <em>real-world parallel</em> — Romania, Bulgaria, North Macedonia</div>
+            </div>
+          </div>
+          <div class="outcome-grid" style="margin-top:20px;">
+            <div class="outcome-card oc-green">
+              <div class="outcome-title">Dismantled</div>
+              <div class="outcome-desc">Corruption exposed. National investigation triggered. Chief shortlist.</div>
+            </div>
+            <div class="outcome-card oc-amber">
+              <div class="outcome-title">Compliant</div>
+              <div class="outcome-desc">Promoted inside a compromised system. The network survived.</div>
+            </div>
+            <div class="outcome-card oc-red">
+              <div class="outcome-title">Absorbed</div>
+              <div class="outcome-desc">Took the money. Became part of the web. Chief anyway.</div>
+            </div>
+            <div class="outcome-card oc-grey">
+              <div class="outcome-title">Outlasted</div>
+              <div class="outcome-desc">Evidence disappeared. Time ran out. Still a Detective.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-visual">
+          <div class="mockup-wrap">
+            <!-- SVG: Ending screen -->
+            <svg viewBox="0 0 360 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:rgba(0,0,0,0.96);border:1px solid #2a2a28;">
+              <text x="180" y="40" font-family="'Oswald',sans-serif" font-size="20" fill="#d4a017" text-anchor="middle" letter-spacing="6">INVESTIGATION CLOSED</text>
+              <text x="180" y="58" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="middle" letter-spacing="3">MIROVA ACU — CASE #0047</text>
+              <!-- stats row -->
+              <rect x="24" y="72" width="96" height="60" fill="#111110" stroke="#3a3a35" stroke-width="1"/>
+              <text x="72" y="100" font-family="'Oswald',sans-serif" font-size="32" fill="#4aaa4a" text-anchor="middle">2</text>
+              <text x="72" y="120" font-family="monospace" font-size="6" fill="#7a7268" text-anchor="middle" letter-spacing="1">CORRUPT ACCUSED</text>
+              <rect x="132" y="72" width="96" height="60" fill="#111110" stroke="#3a3a35" stroke-width="1"/>
+              <text x="180" y="100" font-family="'Oswald',sans-serif" font-size="32" fill="#c0392b" text-anchor="middle">1</text>
+              <text x="180" y="120" font-family="monospace" font-size="6" fill="#7a7268" text-anchor="middle" letter-spacing="1">WRONGFUL</text>
+              <rect x="240" y="72" width="96" height="60" fill="#111110" stroke="#3a3a35" stroke-width="1"/>
+              <text x="288" y="100" font-family="'Oswald',sans-serif" font-size="22" fill="#7a7268" text-anchor="middle">€0</text>
+              <text x="288" y="120" font-family="monospace" font-size="6" fill="#7a7268" text-anchor="middle" letter-spacing="1">BRIBE FUNDS</text>
+              <!-- verdict box -->
+              <rect x="24" y="148" width="312" height="80" fill="rgba(255,255,255,0.02)" stroke="#3a3a35" stroke-width="1"/>
+              <text x="180" y="173" font-family="monospace" font-size="8" fill="#4aaa4a" text-anchor="middle">You dismantled 2 corrupt nodes while keeping</text>
+              <text x="180" y="186" font-family="monospace" font-size="8" fill="#4aaa4a" text-anchor="middle">your record clean. The arrests triggered a</text>
+              <text x="180" y="199" font-family="monospace" font-size="8" fill="#4aaa4a" text-anchor="middle">national investigation. Your name appeared</text>
+              <text x="180" y="212" font-family="monospace" font-size="8" fill="#4aaa4a" text-anchor="middle">on the shortlist for Chief.</text>
+              <!-- real world box -->
+              <rect x="24" y="244" width="312" height="80" fill="rgba(212,160,23,0.03)" stroke="none"/>
+              <line x1="24" y1="244" x2="24" y2="324" stroke="#8a6610" stroke-width="2"/>
+              <text x="36" y="260" font-family="monospace" font-size="6" fill="#8a6610" letter-spacing="3">REAL-WORLD PARALLEL</text>
+              <text x="36" y="276" font-family="monospace" font-size="7" fill="#7a7268">Mirova mirrors corruption structures documented</text>
+              <text x="36" y="288" font-family="monospace" font-size="7" fill="#7a7268">in Romania and Bulgaria 2010–2020. In Romania's</text>
+              <text x="36" y="300" font-family="monospace" font-size="7" fill="#7a7268">prosecutions, 78% of cases had a compromised</text>
+              <text x="36" y="312" font-family="monospace" font-size="7" fill="#7a7268">official inside law enforcement.</text>
+              <!-- restart btn -->
+              <rect x="130" y="336" width="100" height="20" fill="none" stroke="#3a3a35" stroke-width="1"/>
+              <text x="180" y="350" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="middle" letter-spacing="2">NEW INVESTIGATION</text>
+            </svg>
+            <div class="mockup-label">Ending screen — integrity path</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SLIDE 5: WHAT IT TEACHES ===== -->
+  <div class="slide" id="slide-5">
+    <div class="slide-inner">
+      <div class="slide-cols slide-cols-narrow">
+        <div class="col-text">
+          <div class="slide-eyebrow">Learning outcomes</div>
+          <div class="slide-title slide-title-sm">What it teaches</div>
+          <div class="h-rule"></div>
+          <div class="bullet-list">
+            <div class="bullet-item">
+              <div class="bullet-marker">◈</div>
+              <div class="bullet-text">Corruption survives through <em>complexity and incentives</em>, not just bad actors</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">◈</div>
+              <div class="bullet-text">One compromise creates <em>pressure for the next</em></div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">◈</div>
+              <div class="bullet-text">Evidence is <em>ambiguous by design</em> — clean and corrupt actors don't announce themselves</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">◈</div>
+              <div class="bullet-text">Grounded in <em>Transparency International data</em> and cases from Romania, Bulgaria, North Macedonia</div>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-pill">
+              <div class="stat-num">78%</div>
+              <div class="stat-label">of corruption cases had a law enforcement insider (Romania)</div>
+            </div>
+            <div class="stat-pill">
+              <div class="stat-num">1 in 4</div>
+              <div class="stat-label">citizens bribed in CEE (Transparency International)</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-visual">
+          <div class="mockup-wrap">
+            <!-- SVG: Evidence card detail -->
+            <svg viewBox="0 0 360 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:#0a0a08;border:1px solid #2a2a28;">
+              <!-- full screen evidence reveal -->
+              <rect x="0" y="0" width="360" height="340" fill="rgba(10,10,8,0.93)"/>
+              <!-- evidence card centre -->
+              <rect x="40" y="30" width="280" height="240" fill="#111110" stroke="#8a6610" stroke-width="1"/>
+              <line x1="40" y1="31" x2="320" y2="31" stroke="#d4a017" stroke-width="1.5" opacity="0.7"/>
+              <!-- header -->
+              <rect x="40" y="30" width="280" height="30" fill="#111110"/>
+              <line x1="40" y1="60" x2="320" y2="60" stroke="#3a3a35" stroke-width="1"/>
+              <text x="52" y="50" font-family="monospace" font-size="7" fill="#8a6610" letter-spacing="2">WITNESS STATEMENT</text>
+              <text x="308" y="50" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="end">Evidence #3</text>
+              <!-- body -->
+              <text x="52" y="82" font-family="'Oswald',sans-serif" font-size="13" fill="#d4a017" letter-spacing="2">V. DINU</text>
+              <text x="52" y="102" font-family="monospace" font-size="7" fill="#d0c8b0">"He told me directly: nobody touches</text>
+              <text x="52" y="114" font-family="monospace" font-size="7" fill="#d0c8b0">Florescu. I assumed he meant politically.</text>
+              <text x="52" y="126" font-family="monospace" font-size="7" fill="#d0c8b0">Later I understood he meant legally."</text>
+              <text x="52" y="144" font-family="monospace" font-size="7" fill="#7a7268">— former deputy procurement officer,</text>
+              <text x="52" y="156" font-family="monospace" font-size="7" fill="#7a7268">now retired.</text>
+              <rect x="52" y="170" width="62" height="12" fill="none" stroke="#8a6610" stroke-width="1"/>
+              <text x="83" y="180" font-family="monospace" font-size="6" fill="#d4a017" text-anchor="middle" letter-spacing="1">UNVERIFIED</text>
+              <!-- evidence meter -->
+              <text x="52" y="206" font-family="monospace" font-size="7" fill="#7a7268" letter-spacing="1">EVIDENCE GATHERED</text>
+              <text x="308" y="206" font-family="monospace" font-size="7" fill="#d0c8b0" text-anchor="end">3 / 3 pieces</text>
+              <rect x="52" y="212" width="256" height="5" fill="#1a1a17" stroke="#3a3a35" stroke-width="1"/>
+              <rect x="52" y="212" width="256" height="5" fill="#d4a017" rx="1"/>
+              <!-- threshold banner -->
+              <rect x="52" y="226" width="256" height="20" fill="rgba(212,160,23,0.08)" stroke="#8a6610" stroke-width="1"/>
+              <text x="180" y="240" font-family="monospace" font-size="7" fill="#d4a017" text-anchor="middle" letter-spacing="2">THRESHOLD MET — READY TO FILE CASE</text>
+              <!-- footer -->
+              <rect x="40" y="270" width="280" height="28" fill="#0d0d0b"/>
+              <line x1="40" y1="270" x2="320" y2="270" stroke="#3a3a35" stroke-width="1"/>
+              <rect x="244" y="277" width="64" height="14" fill="none" stroke="#3a3a35" stroke-width="1"/>
+              <text x="276" y="288" font-family="monospace" font-size="7" fill="#7a7268" text-anchor="middle" letter-spacing="1">FILE EVIDENCE ›</text>
+              <!-- right panel preview -->
+              <rect x="0" y="295" width="360" height="45" fill="#111110" stroke="#3a3a35" stroke-width="0"/>
+              <line x1="0" y1="295" x2="360" y2="295" stroke="#3a3a35" stroke-width="1"/>
+              <text x="12" y="312" font-family="monospace" font-size="7" fill="#7a7268" letter-spacing="1">V. DINU — Mayor of Mirova  ·  3 connections mapped  ·  evidence: 3/3</text>
+              <rect x="12" y="320" width="200" height="4" fill="#1a1a17" stroke="#3a3a35" stroke-width="1"/>
+              <rect x="12" y="320" width="200" height="4" fill="#d4a017"/>
+            </svg>
+            <div class="mockup-label">Evidence card — threshold reached</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SLIDE 6: WHERE IT'S GOING ===== -->
+  <div class="slide" id="slide-6">
+    <div class="slide-inner">
+      <div class="slide-cols">
+        <div class="col-text">
+          <div class="slide-eyebrow">Status and next steps</div>
+          <div class="slide-title slide-title-sm">Where it's going</div>
+          <div class="h-rule"></div>
+          <div class="bullet-list">
+            <div class="bullet-item">
+              <div class="bullet-marker">●</div>
+              <div class="bullet-text">Current state: working prototype</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">○</div>
+              <div class="bullet-text">Next: richer narrative and advisor dialogue, additional character profiles</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">○</div>
+              <div class="bullet-text">Next: region-specific scenarios grounded in local case data</div>
+            </div>
+            <div class="bullet-item">
+              <div class="bullet-marker">○</div>
+              <div class="bullet-text">Next: ending screen benchmarked against real EU country outcomes</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-visual">
+          <div class="mockup-wrap">
+            <!-- SVG: Intel / right panel mockup showing dossier state -->
+            <svg viewBox="0 0 340 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;background:#0a0a08;border:1px solid #2a2a28;">
+              <!-- left dossier panel -->
+              <rect x="0" y="0" width="140" height="380" fill="#111110"/>
+              <line x1="140" y1="0" x2="140" y2="380" stroke="#3a3a35" stroke-width="1"/>
+              <text x="12" y="24" font-family="monospace" font-size="7" fill="#7a7268" letter-spacing="3">ACTIVE DOSSIERS</text>
+              <line x1="12" y1="30" x2="128" y2="30" stroke="#3a3a35" stroke-width="1"/>
+              <!-- case cards -->
+              <!-- op blueprint — closed -->
+              <rect x="8" y="38" width="124" height="46" fill="#1a1a17" stroke="#3a3a35" stroke-width="1"/>
+              <rect x="8" y="38" width="3" height="46" fill="#4aaa4a"/>
+              <text x="18" y="54" font-family="'Oswald',sans-serif" font-size="9" fill="#d0c8b0" letter-spacing="1">OP. BLUEPRINT</text>
+              <text x="18" y="65" font-family="monospace" font-size="6" fill="#7a7268">City contracts</text>
+              <rect x="18" y="70" width="36" height="9" fill="none" stroke="#2d6a2d" stroke-width="1"/>
+              <text x="36" y="77" font-family="monospace" font-size="5" fill="#4aaa4a" text-anchor="middle" letter-spacing="1">CLOSED</text>
+              <!-- op mercury — open -->
+              <rect x="8" y="92" width="124" height="46" fill="#1a1a17" stroke="#8a6610" stroke-width="1"/>
+              <rect x="8" y="92" width="3" height="46" fill="#d4a017"/>
+              <text x="18" y="108" font-family="'Oswald',sans-serif" font-size="9" fill="#d0c8b0" letter-spacing="1">OP. MERCURY</text>
+              <text x="18" y="119" font-family="monospace" font-size="6" fill="#7a7268">Election funding</text>
+              <rect x="18" y="124" width="28" height="9" fill="none" stroke="#8a6610" stroke-width="1"/>
+              <text x="32" y="131" font-family="monospace" font-size="5" fill="#d4a017" text-anchor="middle" letter-spacing="1">OPEN</text>
+              <!-- op sieve — open -->
+              <rect x="8" y="146" width="124" height="46" fill="#1a1a17" stroke="#3a3a35" stroke-width="1"/>
+              <rect x="8" y="146" width="3" height="46" fill="#d4a017"/>
+              <text x="18" y="162" font-family="'Oswald',sans-serif" font-size="9" fill="#d0c8b0" letter-spacing="1">OP. SIEVE</text>
+              <text x="18" y="173" font-family="monospace" font-size="6" fill="#7a7268">Police leak</text>
+              <rect x="18" y="178" width="28" height="9" fill="none" stroke="#8a6610" stroke-width="1"/>
+              <text x="32" y="185" font-family="monospace" font-size="5" fill="#d4a017" text-anchor="middle" letter-spacing="1">OPEN</text>
+              <!-- op ledger — locked -->
+              <rect x="8" y="200" width="124" height="46" fill="#111110" stroke="#2a2a28" stroke-width="1" opacity="0.5"/>
+              <rect x="8" y="200" width="3" height="46" fill="#3a3a35"/>
+              <text x="18" y="216" font-family="'Oswald',sans-serif" font-size="9" fill="#5a5a50" letter-spacing="1">OP. LEDGER</text>
+              <text x="18" y="227" font-family="monospace" font-size="6" fill="#3a3a35">Transactions</text>
+              <rect x="18" y="232" width="32" height="9" fill="none" stroke="#3a3a35" stroke-width="1"/>
+              <text x="34" y="239" font-family="monospace" font-size="5" fill="#5a5a50" text-anchor="middle" letter-spacing="1">LOCKED</text>
+              <!-- right intel panel -->
+              <rect x="140" y="0" width="200" height="380" fill="#0a0a08"/>
+              <rect x="140" y="0" width="200" height="28" fill="#111110"/>
+              <line x1="140" y1="28" x2="340" y2="28" stroke="#3a3a35" stroke-width="1"/>
+              <text x="152" y="18" font-family="'Oswald',sans-serif" font-size="11" fill="#d4a017" letter-spacing="2">V. DINU</text>
+              <text x="152" y="46" font-family="'Oswald',sans-serif" font-size="15" fill="#d4a017" letter-spacing="2">VASILE DINU</text>
+              <text x="152" y="58" font-family="monospace" font-size="6" fill="#7a7268" letter-spacing="2">MAYOR OF MIROVA</text>
+              <!-- badge -->
+              <rect x="152" y="62" width="100" height="11" fill="none" stroke="#7a2020" stroke-width="1"/>
+              <text x="202" y="71" font-family="monospace" font-size="5.5" fill="#c0392b" text-anchor="middle" letter-spacing="1">CASE FILED — CORRUPT</text>
+              <!-- evidence bar -->
+              <text x="152" y="90" font-family="monospace" font-size="6" fill="#7a7268" letter-spacing="2">EVIDENCE GATHERED</text>
+              <line x1="152" y1="95" x2="328" y2="95" stroke="#3a3a35" stroke-width="1"/>
+              <text x="152" y="108" font-family="monospace" font-size="7" fill="#d0c8b0">3 / 3 pieces</text>
+              <rect x="152" y="113" width="176" height="4" fill="#1a1a17"/>
+              <rect x="152" y="113" width="176" height="4" fill="#d4a017" rx="1"/>
+              <!-- evidence log items -->
+              <rect x="152" y="126" width="176" height="28" fill="rgba(212,160,23,0.04)" stroke="none"/>
+              <line x1="152" y1="126" x2="152" y2="154" stroke="#d4a017" stroke-width="2"/>
+              <text x="160" y="137" font-family="monospace" font-size="5.5" fill="#8a6610" letter-spacing="1">FINANCIAL RECORD</text>
+              <text x="160" y="148" font-family="monospace" font-size="6" fill="#7a7268">Wire transfer €380k — Cyprus shell co…</text>
+              <rect x="152" y="158" width="176" height="28" fill="rgba(212,160,23,0.02)" stroke="none"/>
+              <line x1="152" y1="158" x2="152" y2="186" stroke="#8a6610" stroke-width="2"/>
+              <text x="160" y="169" font-family="monospace" font-size="5.5" fill="#8a6610" letter-spacing="1">PHONE RECORD</text>
+              <text x="160" y="180" font-family="monospace" font-size="6" fill="#7a7268">41 calls to Florescu before each tender…</text>
+              <rect x="152" y="190" width="176" height="28" fill="rgba(212,160,23,0.02)" stroke="none"/>
+              <line x1="152" y1="190" x2="152" y2="218" stroke="#8a6610" stroke-width="2"/>
+              <text x="160" y="201" font-family="monospace" font-size="5.5" fill="#8a6610" letter-spacing="1">WITNESS STATEMENT</text>
+              <text x="160" y="212" font-family="monospace" font-size="6" fill="#7a7268">"Nobody touches Florescu" — retired…</text>
+              <!-- connections -->
+              <text x="152" y="236" font-family="monospace" font-size="6" fill="#7a7268" letter-spacing="2">KNOWN CONNECTIONS</text>
+              <line x1="152" y1="241" x2="328" y2="241" stroke="#3a3a35" stroke-width="1"/>
+              <text x="152" y="254" font-family="monospace" font-size="6.5" fill="#d0c8b0">I. Mares</text>
+              <text x="320" y="254" font-family="monospace" font-size="6" fill="#7a7268" text-anchor="end">● mapped</text>
+              <line x1="152" y1="260" x2="328" y2="260" stroke="#2a2a28" stroke-width="1" stroke-dasharray="2 2"/>
+              <text x="152" y="273" font-family="monospace" font-size="6.5" fill="#d0c8b0">R. Florescu</text>
+              <text x="320" y="273" font-family="monospace" font-size="6" fill="#7a7268" text-anchor="end">● mapped</text>
+              <line x1="152" y1="279" x2="328" y2="279" stroke="#2a2a28" stroke-width="1" stroke-dasharray="2 2"/>
+              <text x="152" y="292" font-family="monospace" font-size="6.5" fill="#d0c8b0">S. Bogdan</text>
+              <text x="320" y="292" font-family="monospace" font-size="6" fill="#7a7268" text-anchor="end">○ unmapped</text>
+            </svg>
+            <div class="mockup-label">Dossier panel and intel view — late game</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<div id="chrome-bottom">
+  <button class="nav-btn" onclick="navigate(-1)">‹ Prev</button>
+  <button class="nav-btn" onclick="navigate(1)">Next ›</button>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <div class="pip-row" id="pip-row"></div>
+</div>
+
+<script>
+const SLIDES = document.querySelectorAll('.slide');
+const N = SLIDES.length;
+let current = 0;
+
+function goTo(n) {
+  SLIDES[current].classList.remove('active');
+  current = Math.max(0, Math.min(N - 1, n));
+  SLIDES[current].classList.add('active');
+  document.getElementById('ct-counter').textContent =
+    String(current + 1).padStart(2,'0') + ' / ' + String(N).padStart(2,'0');
+  document.getElementById('progress-fill').style.width =
+    ((current + 1) / N * 100) + '%';
+  document.querySelectorAll('.pip').forEach((p,i) => {
+    p.classList.toggle('active', i === current);
+  });
+}
+
+function navigate(dir) { goTo(current + dir); }
+
+// build pips
+const pipRow = document.getElementById('pip-row');
+for (let i = 0; i < N; i++) {
+  const pip = document.createElement('div');
+  pip.className = 'pip' + (i === 0 ? ' active' : '');
+  pip.onclick = () => goTo(i);
+  pipRow.appendChild(pip);
+}
+
+// keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') navigate(1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') navigate(-1);
+});
+
+// init
+goTo(0);
+</script>
+</body>
+</html>
